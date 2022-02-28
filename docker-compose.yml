@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  db:
+    image: mysql
+    container_name: 'local_mysql'
+    ports:
+      - '3306:3306'
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=N7KzpIgQMxmfdbcc
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=Qwe12345
+      - MYSQL_DATABASE=simple_bank
+    volumes:
+      - data-mysql:/var/lib/postgresql
+volumes:
+  data-mysql:
+    external: true
