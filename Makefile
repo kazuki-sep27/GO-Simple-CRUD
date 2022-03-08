@@ -6,3 +6,9 @@ migrate-up:
 
 migrate-down:
 	migrate -path db/migration -database "mysql://admin:Qwe12345@localhost:3306/simple_bank?sslmode=disable" -verbose down 
+
+sqlc:
+	sqlc generate
+	
+test:
+	go test -v -cover ./...

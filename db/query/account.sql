@@ -13,17 +13,28 @@ INSERT INTO accounts (
   ?, ?, ?
 );
 
+-- name: UpdateAccount :execresult
+UPDATE accounts 
+SET owner = ?,balance = ?,currency = ?
+WHERE id = ?;
+
 -- name: GetLastAccount :one
-SELECT id,owner,balance,currency FROM accounts
+SELECT id,owner,balance,currency,created_at FROM accounts
 ORDER BY id DESC 
 LIMIT 1;
 
 -- name: GetAccountByID :one
-SELECT id,owner,balance,currency FROM accounts
+SELECT id,owner,balance,currency,created_at FROM accounts
 WHERE id = ?;
 
+
+-- name: GetAccountByIDForUpdate :one
+SELECT id,owner,balance,currency,created_at FROM accounts
+WHERE id = ?
+FOR UPDATE;
+
 -- name: ListAccounts :many
-SELECT id,owner,balance,currency FROM accounts
+SELECT id,owner,balance,currency,created_at FROM accounts
 ORDER BY id;
 
 -- name: DeleteAccount :exec

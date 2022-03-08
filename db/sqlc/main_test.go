@@ -10,20 +10,23 @@ import (
 )
 
 var testQuery *Queries
+var testDB *sql.DB
 
 const (
 	dbDriver	=	"mysql"
-	dbSource	=	"admin:Qwe12345@tcp(127.0.0.1:3306)/simple_bank"
+	dbSource	=	"admin:Qwe12345@tcp(127.0.0.1:3306)/simple_bank?parseTime=true"
 )
 
 func TestMain(m *testing.M) {
-	conn,err	:= 	sql.Open(dbDriver,dbSource)
+	var err error
+
+	testDB,err	= 	sql.Open(dbDriver,dbSource)
 
 	if err != nil {
 		log.Fatal("can not connect db:",err)
 	}
 
-	testQuery = New(conn)
+	testQuery = New(testDB)
 
 	os.Exit(m.Run())
 }

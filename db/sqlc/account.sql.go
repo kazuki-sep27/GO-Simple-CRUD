@@ -37,80 +37,81 @@ func (q *Queries) DeleteAccount(ctx context.Context, id int64) error {
 }
 
 const getAccountByID = `-- name: GetAccountByID :one
-SELECT id,owner,balance,currency FROM accounts
+SELECT id,owner,balance,currency,created_at FROM accounts
 WHERE id = ?
 `
 
-type GetAccountByIDRow struct {
-	ID       int64  `json:"id"`
-	Owner    string `json:"owner"`
-	Balance  int64  `json:"balance"`
-	Currency string `json:"currency"`
-}
-
-func (q *Queries) GetAccountByID(ctx context.Context, id int64) (GetAccountByIDRow, error) {
+func (q *Queries) GetAccountByID(ctx context.Context, id int64) (Account, error) {
 	row := q.queryRow(ctx, q.getAccountByIDStmt, getAccountByID, id)
-	var i GetAccountByIDRow
+	var i Account
 	err := row.Scan(
 		&i.ID,
 		&i.Owner,
 		&i.Balance,
 		&i.Currency,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getAccountByIDForUpdate = `-- name: GetAccountByIDForUpdate :one
+SELECT id,owner,balance,currency,created_at FROM accounts
+WHERE id = ?
+FOR UPDATE
+`
+
+func (q *Queries) GetAccountByIDForUpdate(ctx context.Context, id int64) (Account, error) {
+	row := q.queryRow(ctx, q.getAccountByIDForUpdateStmt, getAccountByIDForUpdate, id)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Balance,
+		&i.Currency,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getLastAccount = `-- name: GetLastAccount :one
-SELECT id,owner,balance,currency FROM accounts
+SELECT id,owner,balance,currency,created_at FROM accounts
 ORDER BY id DESC 
 LIMIT 1
 `
 
-type GetLastAccountRow struct {
-	ID       int64  `json:"id"`
-	Owner    string `json:"owner"`
-	Balance  int64  `json:"balance"`
-	Currency string `json:"currency"`
-}
-
-func (q *Queries) GetLastAccount(ctx context.Context) (GetLastAccountRow, error) {
+func (q *Queries) GetLastAccount(ctx context.Context) (Account, error) {
 	row := q.queryRow(ctx, q.getLastAccountStmt, getLastAccount)
-	var i GetLastAccountRow
+	var i Account
 	err := row.Scan(
 		&i.ID,
 		&i.Owner,
 		&i.Balance,
 		&i.Currency,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT id,owner,balance,currency FROM accounts
+SELECT id,owner,balance,currency,created_at FROM accounts
 ORDER BY id
 `
 
-type ListAccountsRow struct {
-	ID       int64  `json:"id"`
-	Owner    string `json:"owner"`
-	Balance  int64  `json:"balance"`
-	Currency string `json:"currency"`
-}
-
-func (q *Queries) ListAccounts(ctx context.Context) ([]ListAccountsRow, error) {
+func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
 	rows, err := q.query(ctx, q.listAccountsStmt, listAccounts)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListAccountsRow
+	var items []Account
 	for rows.Next() {
-		var i ListAccountsRow
+		var i Account
 		if err := rows.Scan(
 			&i.ID,
 			&i.Owner,
 			&i.Balance,
 			&i.Currency,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -123,4 +124,26 @@ func (q *Queries) ListAccounts(ctx context.Context) ([]ListAccountsRow, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateAccount = `-- name: UpdateAccount :execresult
+UPDATE accounts 
+SET owner = ?,balance = ?,currency = ?
+WHERE id = ?
+`
+
+type UpdateAccountParams struct {
+	Owner    string `json:"owner"`
+	Balance  int64  `json:"balance"`
+	Currency string `json:"currency"`
+	ID       int64  `json:"id"`
+}
+
+func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (sql.Result, error) {
+	return q.exec(ctx, q.updateAccountStmt, updateAccount,
+		arg.Owner,
+		arg.Balance,
+		arg.Currency,
+		arg.ID,
+	)
 }
