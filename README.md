@@ -1,3 +1,3 @@
-# simple_bank_go
+# GO Simple CRUD
 
 Exaple GO CRUD Project with unit test
