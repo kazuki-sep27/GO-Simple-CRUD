@@ -1,0 +1,39 @@
+name: ci-test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0.21
+        env:
+          MYSQL_DATABASE: '${{secrets.DB_NAME}}'
+          MYSQL_USER: '${{secrets.DB_USER}}'
+          MYSQL_PASSWORD: '${{secrets.DB_PWD}}'
+        ports:
+          - 3306:3306
+    steps:
+      - name: Check out code to Go directory
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      - name: Install Go-Lang Migrate
+        run:
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.1/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate.linux-amd64 /usr/bin/migrate
+          which migrate
+
+      - name: Run Migration
+        run: migrate -path db/migration -database "mysql://${{secrets.DB_USER}}:${{secrets.DB_PWD}}@tcp(127.0.0.1:3306)/${{secrets.DB_NAME}}" -verbose up
+
+      - name: Test
+        run: go test -v -cover ./...
