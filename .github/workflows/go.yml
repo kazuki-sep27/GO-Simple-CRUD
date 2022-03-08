@@ -16,10 +16,10 @@ jobs:
           MYSQL_DATABASE: '${{secrets.DB_NAME}}'
           MYSQL_USER: '${{secrets.DB_USER}}'
           MYSQL_PASSWORD: '${{secrets.DB_PWD}}'
+          MYSQL_ROOT_PASSWORD: '${{secrets.DB_PWD}}'
         ports:
-          - 33306:3306
-        options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 10
-
+          - 3306:3306
+        options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
     steps:
       - name: Check out code to Go directory
         uses: actions/checkout@v2
