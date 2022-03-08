@@ -18,6 +18,7 @@ jobs:
           MYSQL_PASSWORD: '${{secrets.DB_PWD}}'
         ports:
           - 3306:3306
+
     steps:
       - name: Check out code to Go directory
       - uses: actions/checkout@v2
@@ -26,6 +27,7 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.17
+
       - name: Install Go-Lang Migrate
         run:
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.1/migrate.linux-amd64.tar.gz | tar xvz
