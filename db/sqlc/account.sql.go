@@ -95,10 +95,17 @@ func (q *Queries) GetLastAccount(ctx context.Context) (Account, error) {
 const listAccounts = `-- name: ListAccounts :many
 SELECT id,owner,balance,currency,created_at FROM accounts
 ORDER BY id
+LIMIT ? 
+OFFSET ?
 `
 
-func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
-	rows, err := q.query(ctx, q.listAccountsStmt, listAccounts)
+type ListAccountsParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
+	rows, err := q.query(ctx, q.listAccountsStmt, listAccounts, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

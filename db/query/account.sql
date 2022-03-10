@@ -35,7 +35,9 @@ FOR UPDATE;
 
 -- name: ListAccounts :many
 SELECT id,owner,balance,currency,created_at FROM accounts
-ORDER BY id;
+ORDER BY id
+LIMIT ? 
+OFFSET ?;
 
 -- name: DeleteAccount :exec
 DELETE FROM accounts
