@@ -7,17 +7,16 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/kazuki-sep27/simple_bank_go/api"
 	db "github.com/kazuki-sep27/simple_bank_go/db/sqlc"
-)
-
-const (
-	dbDriver = "mysql"
-	dbSource = "admin:Qwe12345@tcp(127.0.0.1:3306)/simple_bank?parseTime=true"
-	serverAddress = "0.0.0.0:8080"
+	"github.com/kazuki-sep27/simple_bank_go/util"
 )
 
 func main() {
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal("Can not load config :", err)
+	}	
 
-	conn, err := sql.Open(dbDriver, dbSource)
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
 
 	if err != nil {
 		log.Fatal("can not connect db:", err)
@@ -26,7 +25,7 @@ func main() {
 	store := db.NewStore(conn)
 	server := api.NewServer(store)
 
-	err = server.Start(serverAddress)
+	err = server.Start(config.ServerAddress)
 	if err != nil {
 		log.Fatal("cannot start server:", err)
 	}
