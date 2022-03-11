@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	db "github.com/kazuki-sep27/simple_bank_go/db/sqlc"
 )
 
@@ -11,9 +12,9 @@ type CreateAccountRequest struct {
 	Currency string `json:"currency" binding:"required,oneof= USD THB EUR"`
 }
 
-func (server *Server) createAccount(ctx *gin.context) {
+func (server *Server) createAccount(ctx *gin.Context) {
 	var req CreateAccountRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest,errorResponse(err))
 		return
 	}
@@ -24,7 +25,20 @@ func (server *Server) createAccount(ctx *gin.context) {
 		Currency: req.Currency,
 	}
 
-	account, err := server.store.CreateAccounts(ctx, arg)
+	result, err := server.store.CreateAccounts(ctx, arg)
+	
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,errorResponse(err))
+		return
+	}
+
+	accountID, err := result.LastInsertId()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,errorResponse(err))
+		return
+	}
+
+	account, err := server.store.GetAccountByID(ctx,accountID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError,errorResponse(err))
 		return
